@@ -21,7 +21,7 @@ def I(x: torch.Tensor, y: torch.Tensor, z: torch.Tensor) -> torch.Tensor:
 
 
 def hexdigest(x: torch.Tensor) -> str:
-    return ' '.join(f"{(x.item() & 0xFFFFFFFF).to_bytes(4, "little").hex():08}" for x in x)
+    return ''.join(f"{(x.item() & 0xFFFFFFFF).to_bytes(4, "little").hex():08}" for x in x)
 
 
 def preprocess(msg: torch.Tensor, bitlength: torch.Tensor):
@@ -114,16 +114,17 @@ def md5_preprocessed(msg: torch.Tensor, blocks: torch.Tensor | None = None) -> t
         else:
             mask = blocks > block
 
+        remap = torch.arange(4, dtype=dtype)
         for s, func in zip(range(4), [F, G, H, I]):
             for i in range(16):
-                md5[mask, 0] += func(md5[mask, 1], md5[mask, 2], md5[mask, 3]
-                                     ) + msg[mask, block, ORDERS[s][i]] + K[s][i]
-                md5[mask, 0] &= 0xFFFFFFFF
-                md5[mask, 0] = (md5[mask, 0] << SHIFTS[s][i]) | (
-                    md5[mask, 0] >> (32 - SHIFTS[s][i]))
-                md5[mask, 0] += md5[mask, 1]
-                md5[mask, 0] &= 0xFFFFFFFF
-                md5 = md5.roll(1, 1)
+                md5[mask, remap[0]] += func(md5[mask, remap[1]], md5[mask, remap[2]], md5[mask, remap[3]]
+                                            ) + msg[mask, block, ORDERS[s][i]] + K[s][i]
+                md5[mask, remap[0]] &= 0xFFFFFFFF
+                md5[mask, remap[0]] = (md5[mask, remap[0]] << SHIFTS[s][i]) | (
+                    md5[mask, remap[0]] >> (32 - SHIFTS[s][i]))
+                md5[mask, remap[0]] += md5[mask, remap[1]]
+                md5[mask, remap[0]] &= 0xFFFFFFFF
+                remap = remap.roll(1)
         md5[mask] = (md5[mask] + init[mask]) & 0xFFFFFFFF
         init = md5.clone()
 

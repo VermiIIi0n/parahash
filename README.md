@@ -35,4 +35,4 @@ for out in parahash.md5.md5(data, device=device):
     print(parahash.md5.hexdigest(out))
 ```
 
-Current implementation with enough batch size can get 20 million hashes per second on a single RTX3090 GPU, 16 million hashes per second on a single RTX4070TiS GPU and 750K hashes per second on a single 7950x CPU.
+Current implementation with enough batch size can get 20 million single-block(<=448bits) hashes per second on a single RTX3090 GPU, 16 million hashes per second on a single RTX4070TiS GPU and 750K hashes per second on a single 7950x CPU.
